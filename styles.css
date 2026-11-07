@@ -59,7 +59,17 @@ a { color: inherit; text-decoration: none; }
   color: var(--cyan);
   text-shadow: 2px 0 var(--orange), -2px 0 #347cff;
 }
-[data-glitch] { cursor: pointer; }
+[data-glitch] {
+  cursor: pointer;
+}
+[data-glitch],
+[data-glitch] * {
+  transition: color .35s ease;
+}
+[data-glitch]:hover,
+[data-glitch]:hover * {
+  color: #fff;
+}
 
 .site-header, .site-footer {
   align-items: center;
@@ -166,8 +176,18 @@ section { padding: 8rem 10vw; position: relative; }
 .eyebrow-line { background: var(--cyan); display: inline-block; height: 1px; width: 2.2rem; }
 h1, h2, h3, p { margin-top: 0; }
 h1 { font-size: clamp(4.5rem, 12vw, 10.5rem); font-weight: 500; letter-spacing: -.055em; line-height: .78; margin: 2.5rem 0; text-transform: uppercase; white-space: nowrap; }
-h1 span, h2 em, .contact-panel h2 span { color: var(--cyan); font-style: normal; }
+h1, .profile-layout h2, .contact-panel h2 { color: var(--cyan); }
+h2 em { font-style: normal; }
+.heading-white { color: var(--text); font-style: normal; }
+.contact-panel h2 .heading-white { color: var(--text); }
 .hero-copy, .contact-copy { color: var(--muted); font-size: 1.1rem; line-height: 1.6; max-width: 28rem; }
+.typing-char {
+  opacity: 1;
+  transition: opacity .05s linear;
+}
+.typing-text.is-typing .typing-char:not(.is-visible) {
+  opacity: 0;
+}
 .button { align-items: center; border: 1px solid var(--cyan); display: inline-flex; font-family: var(--mono); font-size: .65rem; gap: 2rem; letter-spacing: .12em; margin-top: 2rem; padding: 1.1rem 1.25rem; text-transform: uppercase; transition: background .3s, color .3s, transform .3s; }
 .button:hover { background: var(--cyan); color: var(--background); transform: translateY(-4px); }
 .button-arrow { font-size: 1rem; }

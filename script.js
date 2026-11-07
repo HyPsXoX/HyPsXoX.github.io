@@ -2,6 +2,10 @@ const sections = document.querySelectorAll("[data-reveal]");
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const matrixCharacters = "アカサタナハマヤラワ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const glitchSessions = new WeakMap();
+const typingSessions = new WeakMap();
+const typingParagraphs = document.querySelectorAll(
+  ".hero-copy, .profile-copy > p, .contact-copy"
+);
 
 document.querySelectorAll(".waveform-shape").forEach((shape) => {
   shape.style.setProperty("--pulse-duration", `${2.4 + Math.random() * 2.8}s`);
@@ -27,6 +31,63 @@ function prepareGlitchText(element) {
       fragment.appendChild(span);
     });
     textNode.replaceWith(fragment);
+  });
+}
+
+function prepareTypingText(element) {
+  const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+  const textNodes = [];
+  let node;
+
+  while ((node = walker.nextNode())) {
+    if (node.textContent) textNodes.push(node);
+  }
+
+  let characterIndex = 0;
+  textNodes.forEach((textNode) => {
+    const fragment = document.createDocumentFragment();
+    [...textNode.textContent].forEach((character) => {
+      const span = document.createElement("span");
+      span.className = "typing-char";
+      span.style.setProperty("--typing-delay", `${characterIndex * 25}ms`);
+      span.textContent = character;
+      fragment.appendChild(span);
+      characterIndex += 1;
+    });
+    textNode.replaceWith(fragment);
+  });
+  element.classList.add("typing-text");
+}
+
+function startTypingText(element) {
+  stopTypingText(element);
+  const session = { timeouts: [] };
+  typingSessions.set(element, session);
+  element.querySelectorAll(".typing-char").forEach((character) => {
+    character.classList.remove("is-visible");
+  });
+  element.classList.remove("is-typing");
+  void element.offsetWidth;
+  element.classList.add("is-typing");
+
+  element.querySelectorAll(".typing-char").forEach((character) => {
+    const timeout = window.setTimeout(() => {
+      if (typingSessions.get(element) !== session) return;
+      character.classList.add("is-visible");
+    }, Number.parseFloat(character.style.getPropertyValue("--typing-delay")));
+    session.timeouts.push(timeout);
+  });
+}
+
+function stopTypingText(element) {
+  const session = typingSessions.get(element);
+  if (session) {
+    session.timeouts.forEach((timeout) => window.clearTimeout(timeout));
+    typingSessions.delete(element);
+  }
+  element.classList.remove("is-typing");
+  element.querySelectorAll(".typing-char").forEach((character) => {
+    character.classList.add("is-visible");
   });
 }
 
@@ -142,8 +203,10 @@ if (reducedMotion) {
         entry.target.classList.toggle("is-hidden", !entry.isIntersecting);
         if (entry.isIntersecting) {
           entry.target.querySelectorAll("[data-glitch]").forEach(startGlitchSession);
+          entry.target.querySelectorAll(".typing-text").forEach(startTypingText);
         } else {
           entry.target.querySelectorAll("[data-glitch]").forEach(stopGlitchSession);
+          entry.target.querySelectorAll(".typing-text").forEach(stopTypingText);
         }
       });
     },
@@ -152,8 +215,6 @@ if (reducedMotion) {
 
   sections.forEach((section) => observer.observe(section));
   document.querySelectorAll("[data-glitch]").forEach(prepareGlitchText);
-  document.querySelectorAll("[data-glitch]").forEach((element) => {
-    element.addEventListener("click", () => startGlitchSession(element));
-  });
-
 }
+
+typingParagraphs.forEach(prepareTypingText);
